@@ -46,6 +46,7 @@ resource "google_storage_bucket" "gke-log-bucket" {
   name          = "stackdriver-gke-logging-bucket-${random_id.server.hex}"
   storage_class = "NEARLINE"
   force_destroy = true
+  zone = var.zone
 }
 
 // Create a BigQuery Dataset for storage of logs
@@ -124,6 +125,7 @@ resource "google_logging_project_sink" "bigquery-sink" {
 // Grant the role of Storage Object Creator
 resource "google_project_iam_binding" "log-writer-storage" {
   role = "roles/storage.objectCreator"
+  project = var.project
 
   members = [
     google_logging_project_sink.storage-sink.writer_identity,
@@ -133,6 +135,7 @@ resource "google_project_iam_binding" "log-writer-storage" {
 // Grant the role of BigQuery Data Editor
 resource "google_project_iam_binding" "log-writer-bigquery" {
   role = "roles/bigquery.dataEditor"
+  project = var.project
 
   members = [
     google_logging_project_sink.bigquery-sink.writer_identity,
